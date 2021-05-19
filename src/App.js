@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 export function App() {
   const [items, setItems] = useState([]);
   const [ACCESS_TOKEN, setACCESS_TOKEN] = useState("jordan");
+  const [newItemText, setNewItemText] = useState("");
 
   async function handleGetFromList() {
     const response = await fetch(
@@ -16,7 +17,7 @@ export function App() {
   }
 
   async function setCompletion(item) {
-    const response = await fetch(
+    await fetch(
       `https://one-list-api.herokuapp.com/items/${item.id}?access_token=${ACCESS_TOKEN}`,
       {
         method: "PUT",
@@ -30,7 +31,23 @@ export function App() {
     );
     handleGetFromList();
   }
-
+  async function handleFormSubmit(event) {
+    event.preventDefault();
+    const response = await fetch(
+      `https://one-list-api.herokuapp.com/items/?access_token=${ACCESS_TOKEN}`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          item: {
+            text: newItemText,
+          },
+        }),
+      }
+    );
+    const data = await response.json();
+    setItems([...items, data]);
+  }
   useEffect(() => {
     handleGetFromList();
   }, [ACCESS_TOKEN]);
@@ -54,6 +71,14 @@ export function App() {
           </li>
         ))}
       </ul>
+      <form onSubmit={handleFormSubmit}>
+        <input
+          type="text"
+          onInput={(event) => setNewItemText(event.target.value)}
+          value={newItemText}
+        />
+        <button type="submit">Submit</button>
+      </form>
     </div>
   );
 }
